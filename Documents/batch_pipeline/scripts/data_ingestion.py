@@ -1,50 +1,36 @@
-# Import necessary libraries
-import boto3  # AWS SDK to interact with AWS services like S3
-import json  # Used to convert Python objects into JSON format
-from datetime import datetime  # To get current timestamp for the data
+import boto3
+import os
 
-# Function to upload data to AWS S3
-def upload_to_s3(data, bucket_name, object_name):
+def upload_to_s3(local_file_path, bucket_name, s3_file_name):
     """
-    This function uploads the given data to the specified S3 bucket and object name.
-    Arguments:
-    - data: Data to upload (in Python dictionary format).
-    - bucket_name: The name of the S3 bucket to upload to.
-    - object_name: The S3 object key (path) where the data will be stored.
+    Upload a file to an S3 bucket.
+
+    :param local_file_path: Path to the local file to upload
+    :param bucket_name: Name of the S3 bucket
+    :param s3_file_name: Name of the file in the S3 bucket
     """
-    # Create an S3 client
+    # Initialize a session using Amazon S3
     s3 = boto3.client('s3')
 
-    # Upload the data to S3, converting it to JSON format using json.dumps()
-    s3.put_object(Body=json.dumps(data), Bucket=bucket_name, Key=object_name)
+    try:
+        # Upload the file
+        s3.upload_file(local_file_path, bucket_name, s3_file_name)
+        print(f"File '{local_file_path}' uploaded to '{bucket_name}/{s3_file_name}'")
+    except Exception as e:
+        print(f"Error uploading file: {e}")
 
-    # Print a confirmation message when data is successfully uploaded
-    print(f"Data uploaded to {bucket_name}/{object_name}")
+def main():
+    # Define the file you want to upload and the bucket name
+    local_file_path = '/Users/anirudhjosuyla/Documents/batch_pipeline/data.csv'   # Replace with your local file path
+    bucket_name = 'my-unique-bucketname'   # Replace with your S3 bucket name
+    s3_file_name = 'data/file.csv'  # The name you want the file to have in S3
 
-# Function to simulate data ingestion
-def ingest_data():
-    """
-    This function simulates the process of pulling data from an external source.
-    It generates mock data and uploads it to an S3 bucket.
-    """
-    # Simulate data to be ingested (replace with actual data collection logic)
-    data = {
-        'timestamp': datetime.now().isoformat(),  # Current timestamp
-        'event': 'user_posted',  # Simulating a user event
-        'user': 'john_doe',  # Example user
-        'content': 'This is a mock post!'  # Example content of the post
-    }
+    # Check if the local file exists
+    if os.path.exists(local_file_path):
+        print(f"Uploading {local_file_path} to S3...")
+        upload_to_s3(local_file_path, bucket_name, s3_file_name)
+    else:
+        print(f"The file '{local_file_path}' does not exist. Please check the path.")
 
-    # S3 bucket where data will be stored (replace with your actual bucket name)
-    bucket_name = 'your-s3-bucket-name'
-
-    # Define a unique object name for each data file by using the current timestamp
-    object_name = f"data/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-
-    # Call the function to upload the data to S3
-    upload_to_s3(data, bucket_name, object_name)
-
-# Main entry point of the script
 if __name__ == "__main__":
-    # Call the function to ingest data
-    ingest_data()
+    main()
