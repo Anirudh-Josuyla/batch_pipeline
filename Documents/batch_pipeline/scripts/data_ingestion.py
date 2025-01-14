@@ -36,7 +36,7 @@ def ingest_data():
     }
 
     # S3 bucket where data will be stored (replace with your actual bucket name)
-    bucket_name = 'your-s3-bucket-name'
+    bucket_name = 'my-s3-bucket-name'
 
     # Define a unique object name for each data file by using the current timestamp
     object_name = f"data/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
